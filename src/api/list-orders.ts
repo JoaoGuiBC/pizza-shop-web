@@ -30,7 +30,6 @@ export async function listOrders({
   orderId,
   status,
 }: ListOrdersQuery) {
-  console.log(status)
   const response = await api.get<ListOrdersResponse>('/orders', {
     params: {
       pageIndex: pageIndex || 0,
