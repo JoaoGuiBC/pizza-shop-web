@@ -27,25 +27,25 @@ export function SignUp() {
     formState: { isSubmitting },
   } = useForm<SignUpForm>()
 
-  const { mutateAsync: registerRestaurantFn } = useMutation({
+  const { mutateAsync: registerRestaurantFn, isError } = useMutation({
     mutationFn: registerRestaurant,
   })
 
   async function handleSignUp(data: SignUpForm) {
-    try {
-      registerRestaurantFn(data)
+    registerRestaurantFn(data)
 
-      toast.success('Restaurante cadastrado com sucesso!', {
-        action: {
-          label: 'Login',
-          onClick: () => {
-            navigate(`/sign-in?email=${data.email}`)
-          },
-        },
-      })
-    } catch {
-      toast.error('Erro ao cadastrar restaurante.')
+    if (isError) {
+      return toast.error('Erro ao cadastrar restaurante.')
     }
+
+    toast.success('Restaurante cadastrado com sucesso!', {
+      action: {
+        label: 'Login',
+        onClick: () => {
+          navigate(`/sign-in?email=${data.email}`)
+        },
+      },
+    })
   }
 
   return (

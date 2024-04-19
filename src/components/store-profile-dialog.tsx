@@ -39,16 +39,6 @@ export function StoreProfileDialog() {
     staleTime: Infinity,
   })
 
-  const { mutateAsync: updateProfileFn } = useMutation({
-    mutationFn: updateProfile,
-    onMutate({ description, name }) {
-      updateManagedRestaurantCache({ description, name })
-    },
-    onError(_, { description, name }) {
-      updateManagedRestaurantCache({ description, name })
-    },
-  })
-
   const {
     register,
     handleSubmit,
@@ -61,9 +51,23 @@ export function StoreProfileDialog() {
     },
   })
 
+  const { mutateAsync: updateProfileFn } = useMutation({
+    mutationFn: updateProfile,
+    onMutate({ description, name }) {
+      const { cached } = updateManagedRestaurantCache({ description, name })
+
+      return { previousProfile: cached }
+    },
+    onError(_, __, context) {
+      if (context?.previousProfile) {
+        updateManagedRestaurantCache(context.previousProfile)
+      }
+    },
+  })
+
   function updateManagedRestaurantCache({
-    description,
     name,
+    description,
   }: StoreProfileSchema) {
     const cached = queryClient.getQueryData<GetManagedRestaurantResponse>([
       'managed-restaurant',
@@ -79,11 +83,16 @@ export function StoreProfileDialog() {
         },
       )
     }
+
+    return { cached }
   }
 
   async function handleUpdateProfile(data: StoreProfileSchema) {
     try {
-      await updateProfileFn(data)
+      await updateProfileFn({
+        name: data.name,
+        description: data.description,
+      })
 
       toast.success('Perfil atualizado com sucesso!')
     } catch {
