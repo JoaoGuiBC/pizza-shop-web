@@ -27,25 +27,26 @@ export function SignUp() {
     formState: { isSubmitting },
   } = useForm<SignUpForm>()
 
-  const { mutateAsync: registerRestaurantFn, isError } = useMutation({
+  const { mutateAsync: registerRestaurantFn } = useMutation({
     mutationFn: registerRestaurant,
+    onSuccess: () => console.log('asd'),
   })
 
   async function handleSignUp(data: SignUpForm) {
-    registerRestaurantFn(data)
+    try {
+      await registerRestaurantFn(data)
 
-    if (isError) {
+      toast.success('Restaurante cadastrado com sucesso!', {
+        action: {
+          label: 'Login',
+          onClick: () => {
+            navigate(`/sign-in?email=${data.email}`)
+          },
+        },
+      })
+    } catch {
       return toast.error('Erro ao cadastrar restaurante.')
     }
-
-    toast.success('Restaurante cadastrado com sucesso!', {
-      action: {
-        label: 'Login',
-        onClick: () => {
-          navigate(`/sign-in?email=${data.email}`)
-        },
-      },
-    })
   }
 
   return (
@@ -54,7 +55,7 @@ export function SignUp() {
 
       <div className="p-8">
         <Button variant="ghost" asChild className="absolute right-8 top-8">
-          <Link to="/sign-in">Faler login</Link>
+          <Link to="/sign-in">Fazer login</Link>
         </Button>
 
         <div className="flex w-[350px] flex-col justify-center gap-6">
